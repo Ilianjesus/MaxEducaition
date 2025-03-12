@@ -1,7 +1,7 @@
 import React from "react";
 import { View, Text, StyleSheet, TouchableOpacity } from "react-native";
 
-const CoursesScreen = () => {
+const CourseScreen = () => {
     return (
         <View>
             <Text
@@ -16,4 +16,4 @@ const CoursesScreen = () => {
     );
 }
 
-export default CoursesScreen;
+export default CourseScreen;
