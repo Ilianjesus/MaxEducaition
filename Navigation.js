@@ -1,63 +1,25 @@
+// Importaciones
 import React from "react";
 import { createBottomTabNavigator } from "@react-navigation/bottom-tabs";
 import { NavigationContainer } from "@react-navigation/native";
 import MaterialCommunityIcons from '@expo/vector-icons/MaterialCommunityIcons';
 import { createNativeStackNavigator } from "@react-navigation/native-stack";
 
-
-//Screens
+// Screens
 import HomeScreen from "./screens/HomeScreen";
 import ProfileScreen from "./screens/ProfileScreen";
 import SearchScreen from "./screens/SearchScreen";
 import CoursesScreen from "./screens/CoursesScreen";
 import Course from "./screens/Course";
 import RecommendationsScreen from "./screens/RecommendationsScreen";
+import Lesson from "./screens/Lesson";
 
+// STACK NAVIGATOR GLOBAL
+const Stack = createNativeStackNavigator();
 
-//HOME STACK
-const HomeStackNavigator = createNativeStackNavigator();
-function HomeStack() {
-    return (
-        <HomeStackNavigator.Navigator
-            initialRouteName="HomeScreen"
-        >
-            <HomeStackNavigator.Screen name="HomeScreen" component={HomeScreen} />
-            <HomeStackNavigator.Screen name="Course" component={Course} />
-
-        </HomeStackNavigator.Navigator>
-    );
-}
-
-//SEARCH STACK
-const SearchStackNavigator = createNativeStackNavigator();
-function SearchStack() {
-    return (
-        <SearchStackNavigator.Navigator
-            initialRouteName="SearchScreen"
-        >
-            <SearchStackNavigator.Screen name="SearchScreen" component={SearchScreen} />
-            <SearchStackNavigator.Screen name="Course" component={Course} />
-        </SearchStackNavigator.Navigator>
-    );
-}
-
-//PROFILE STACK
-const ProfileStackNavigator = createNativeStackNavigator();
-function ProfileStack() {
-    return (
-        <ProfileStackNavigator.Navigator
-            initialRouteName="ProfileScreen"
-        >
-            <ProfileStackNavigator.Screen name="ProfileScreen" component={ProfileScreen} />
-            <ProfileStackNavigator.Screen name="Recommendations" component={RecommendationsScreen} />
-        </ProfileStackNavigator.Navigator>
-    );
-}
-
-
-//TAB NAVIGATOR
-const Tab = createBottomTabNavigator();
 function MyTabs() {
+    const Tab = createBottomTabNavigator();
+    
     return (
         <Tab.Navigator
             initialRouteName="Home"
@@ -67,7 +29,7 @@ function MyTabs() {
                 
             <Tab.Screen 
                  name="Home" 
-                 component={HomeStack}
+                 component={HomeScreen}
                  options={{
                         tabBarLabel: "Home",
                         tabBarIcon: ({ color, size }) => (
@@ -79,7 +41,7 @@ function MyTabs() {
             />
             <Tab.Screen 
                  name="Search" 
-                 component={SearchStack}
+                 component={SearchScreen}
                  options={{
                     tabBarLabel: "Search",
                     tabBarIcon: ({ color, size }) => (
@@ -101,7 +63,7 @@ function MyTabs() {
             />
             <Tab.Screen 
                  name="Profile" 
-                 component={ProfileStack} 
+                 component={ProfileScreen} 
                  options={{
                     tabBarLabel: "My account",
                     tabBarIcon: ({ color, size }) => (
@@ -114,11 +76,22 @@ function MyTabs() {
     );
 }
 
-
 export default function Navigation() {
     return (
         <NavigationContainer>
-            <MyTabs />
+            <Stack.Navigator>
+                <Stack.Screen 
+                    name="MyTabs" 
+                    component={MyTabs} 
+                    options={{ headerShown: false }} 
+                />
+                <Stack.Screen 
+                    name="Course" 
+                    component={Course} 
+                />
+                <Stack.Screen name="Recommendations" component={RecommendationsScreen} />
+                <Stack.Screen name="Lesson" component={Lesson} />
+            </Stack.Navigator>
         </NavigationContainer>
     );
 }
