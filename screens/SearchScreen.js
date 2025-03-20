@@ -19,7 +19,7 @@ const SearchScreen = () => {
 
     return (
         <View style={styles.container}>
-            <Text style={styles.title}>Enter a title to search</Text>
+            <Text style={styles.title}>¿Que curso quieres comenzar?</Text>
             
             <View style={styles.searchContainer}>
                 <TextInput 
@@ -34,27 +34,9 @@ const SearchScreen = () => {
                 </TouchableOpacity>
             </View>
 
-            <TouchableOpacity
-            onPress={() => navigation.navigate("Course")}
-                style={{
-                  backgroundColor: "blue",
-                  padding: 10,
-                  marginTop: "20%",
-                  width: "50%",
-                  alignSelf: "center",
-                  borderRadius:10,
-            }}
-            >
-                <Text
-                    style={{
-                        fontSize:15,
-                        textAlign: "center",
-                        color: "white",
-                    }}
-                >Go to Course Screen</Text>
-            </TouchableOpacity>
-
             <View style={styles.rectanglesContainer}>
+                <TouchableOpacity style={styles.rectangle} onPress={goToCourse}/>
+                <TouchableOpacity style={styles.rectangle} onPress={goToCourse}/>
                 <TouchableOpacity style={styles.rectangle} onPress={goToCourse}/>
                 <TouchableOpacity style={styles.rectangle} onPress={goToCourse}/>
                 <TouchableOpacity style={styles.rectangle} onPress={goToCourse}/>
@@ -74,9 +56,9 @@ const styles = StyleSheet.create({
         marginTop: 60,
     },
     title: {
-        fontSize: 30,
+        fontSize: 25,
         textAlign: "center",
-        marginBottom: 20,
+        marginBottom: 10,
         fontWeight: "bold",
     },
     searchContainer: {
@@ -95,7 +77,7 @@ const styles = StyleSheet.create({
     },
     searchButton: {
         marginLeft: 10,
-        backgroundColor: "#007bff",
+        backgroundColor: "#086db8",
         padding: 10,
         borderRadius: 5,
     },
@@ -105,9 +87,9 @@ const styles = StyleSheet.create({
         alignItems: "center",
     },
     rectangle: {
-        width: "80%",
+        width: "100%",
         height: 80, // Altura del rectángulo
-        backgroundColor: "#ddd", // Color de fondo
+        backgroundColor: "#086db8", // Color de fondo
         marginBottom: 10, // Espaciado entre rectángulos
         borderRadius: 10, // Bordes redondeados
     }

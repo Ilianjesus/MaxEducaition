@@ -6,6 +6,7 @@ import MaterialCommunityIcons from '@expo/vector-icons/MaterialCommunityIcons';
 import { createNativeStackNavigator } from "@react-navigation/native-stack";
 
 // Screens
+import Login from "./screens/Login";
 import HomeScreen from "./screens/HomeScreen";
 import ProfileScreen from "./screens/ProfileScreen";
 import SearchScreen from "./screens/SearchScreen";
@@ -13,6 +14,10 @@ import CoursesScreen from "./screens/CoursesScreen";
 import Course from "./screens/Course";
 import RecommendationsScreen from "./screens/RecommendationsScreen";
 import Lesson from "./screens/Lesson";
+import ProfileConfigScreen from "./screens/ProfileConfigScreen";
+import CreateCourseScreen from "./screens/CreateCourseScreen";
+import CursosCreadosScreen from "./screens/CursosCreadosScreen";
+import CursoCreado from "./screens/CursoCreado";
 
 // STACK NAVIGATOR GLOBAL
 const Stack = createNativeStackNavigator();
@@ -79,18 +84,16 @@ function MyTabs() {
 export default function Navigation() {
     return (
         <NavigationContainer>
-            <Stack.Navigator>
-                <Stack.Screen 
-                    name="MyTabs" 
-                    component={MyTabs} 
-                    options={{ headerShown: false }} 
-                />
-                <Stack.Screen 
-                    name="Course" 
-                    component={Course} 
-                />
+            <Stack.Navigator initialRouteName="Login">
+                <Stack.Screen name="Login" component={Login} options={{ headerShown: false }} />
+                <Stack.Screen name="MyTabs" component={MyTabs} options={{ headerShown: false }} />
+                <Stack.Screen name="Course" component={Course}/>
                 <Stack.Screen name="Recommendations" component={RecommendationsScreen} />
                 <Stack.Screen name="Lesson" component={Lesson} />
+                <Stack.Screen name="ProfileConfig" component={ProfileConfigScreen} />
+                <Stack.Screen name="CreateCourse" component={CreateCourseScreen} />
+                <Stack.Screen name="CursosCreados" component={CursosCreadosScreen} />
+                <Stack.Screen name="CursoCreado" component={CursoCreado} />
             </Stack.Navigator>
         </NavigationContainer>
     );
