@@ -1,34 +1,52 @@
-import React from "react";
+import React, { useState } from "react";
 import { View, Text, StyleSheet, TouchableOpacity } from "react-native";
+import Video from "react-native-video"; // Importa el componente Video
 
 const Lesson = () => {
+    const [playVideo, setPlayVideo] = useState(false);
+
     return (
         <View style={styles.container}>
-            <Text 
-            style={{
-                fontSize: 30,
-                textAlign: 'center',
-                marginTop: "5%"
-            }}
-            >Nombre de la lección</Text>
+            <Text style={styles.title}>Nombre de la lección</Text>
 
             <View style={styles.rectanglesContainer}>
-                <TouchableOpacity style={styles.rectangle} />
+                {playVideo ? (
+                    <Video
+                        source={{uri: "https://drive.google.com/file/d/14B0FVPC8kBtlnqgGgPihQ445K2uiLR_z/view?usp=sharing"}} // Ruta del video
+                        style={styles.video}
+                        controls
+                        resizeMode="contain"
+                    />
+                ) : (
+                    <TouchableOpacity
+                        style={styles.rectangle}
+                        onPress={() => setPlayVideo(true)} // Activa el video al presionar
+                    />
+                )}
             </View>
-
-
         </View>
-        
-    )
-}
+    );
+};
+
+export default Lesson;
 
 const styles = StyleSheet.create({
+    title: {
+        fontSize: 30,
+        textAlign: "center",
+        marginTop: "5%",
+    },
     rectangle: {
         width: "100%",
         height: 250,
         backgroundColor: "black",
         borderRadius: 10,
         marginBottom: 10,
+    },
+    video: {
+        width: "100%",
+        height: 250,
+        borderRadius: 10,
     },
     rectanglesContainer: {
         marginTop: 20,
@@ -37,11 +55,8 @@ const styles = StyleSheet.create({
     },
     container: {
         flex: 1,
-        justifyContent: "flex-start",
-        alignItems: "center",
-        padding: 0,
-        backgroundColor: "#f8f8f8",
-        marginTop: 10,
+        backgroundColor: "#fff",
+        padding: 10,
     },
 });
-export default Lesson;
+
