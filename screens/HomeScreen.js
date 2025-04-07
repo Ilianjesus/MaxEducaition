@@ -1,144 +1,128 @@
 import React from "react";
-import { View, Text, StyleSheet, TouchableOpacity, FlatList } from "react-native";
+import { View, Text, StyleSheet, TouchableOpacity, FlatList, Image } from "react-native";
 import { useNavigation } from "@react-navigation/native";
+import cursos from "../models/Cursos";
 
 const HomeScreen = () => {
-    const navigation = useNavigation();
+  const navigation = useNavigation();
 
-    const goToCourse = () => {
-        navigation.navigate("Course");
-    };
+  const goToCourse = (curso) => {
+    navigation.navigate("Course", { curso });
+  };
 
-    const courses = [
-        { id: '1', title: 'Curso 1' },
-        { id: '2', title: 'Curso 2' },
-        { id: '3', title: 'Curso 3' },
-        { id: '4', title: 'Curso 4' },
-        { id: '5', title: 'Curso 5' },
-        { id: '6', title: 'Curso 6' },
-        { id: '7', title: 'Curso 7' },
-        { id: '8', title: 'Curso 8' },
-        { id: '9', title: 'Curso 9' },
-        { id: '10', title: 'Curso 10' },
-    ];
+  const renderCourseItem = ({ item, isTop }) => (
+    <TouchableOpacity onPress={() => goToCourse(item)} style={isTop ? styles.carouselBox : styles.courseBox}>
+      <Image source={item.imagen} style={isTop ? styles.carouselImage : styles.courseImage} />
+      <Text style={styles.courseText}>{item.titulo}</Text>
+    </TouchableOpacity>
+  );
 
-    const additionalBoxes = new Array(20).fill(null).map((_, index) => ({
-        id: `${index + 1}`,
-        title: `Cuadro ${index + 1}`
-    }));
-
-    return (
-        <FlatList
-            ListHeaderComponent={
-                <>
-                <Text style={{
-                    fontSize: 30,
-                    textAlign: 'center',
-                    marginTop: 60,
-                    color: 'white',
-                }}>Bienvenid@!</Text>
-                    <Text style={styles.title}>Top 10</Text>
-
-                    <FlatList
-                        data={courses}
-                        renderItem={({ item }) => (
-                            <TouchableOpacity
-                                onPress={goToCourse}
-                                style={styles.carouselBox}
-                            >
-                                <Text style={styles.buttonText}>{item.title}</Text>
-                            </TouchableOpacity>
-                        )}
-                        keyExtractor={(item) => item.id}
-                        horizontal
-                        showsHorizontalScrollIndicator={false}
-                        contentContainerStyle={styles.carouselContainer}
-                    />
-
-                    <Text style={styles.subtitle}>Todos los cursos</Text>
-                </>
-            }
-            data={additionalBoxes}
-            renderItem={({ item }) => (
-                <TouchableOpacity
-                    onPress={goToCourse}
-                    style={styles.box}
-                >
-                    <Text style={styles.buttonText}>{item.title}</Text>
-                </TouchableOpacity>
-            )}
+  return (
+    <FlatList style={styles.container}
+      ListHeaderComponent={
+        <>
+          <Text style={styles.welcomeText}>Bienvenido Ilian!</Text>
+          <Text style={styles.title}>Top 10</Text>
+          <FlatList
+            data={cursos.slice(0, 10)}
+            renderItem={({ item }) => renderCourseItem({ item, isTop: true })}
             keyExtractor={(item) => item.id}
-            numColumns={2}
-            contentContainerStyle={[styles.boxListContainer, { backgroundColor: '#086db8' }]}
-            />
-    );
+            horizontal
+            showsHorizontalScrollIndicator={false}
+          />
+          <Text style={styles.subtitle}>Todos los cursos</Text>
+        </>
+      }
+      data={cursos.slice(10)}
+      renderItem={({ item }) => renderCourseItem({ item, isTop: false })}
+      keyExtractor={(item) => item.id}
+      numColumns={2}
+    />
+  );
 };
 
+export default HomeScreen;
+
 const styles = StyleSheet.create({
-    container: {
-        flex: 1,
-        backgroundColor: '#086db8', // Fondo de la pantalla
-    },
-    title: {
-        fontSize: 30,
-        textAlign: 'left',
-        marginBottom: 20,
-        marginTop: 40,
-        
-        color: 'white', // Texto en blanco para contrastar con el fondo azul
-    },
-    subtitle: {
-        fontSize: 20,
-        textAlign: 'left',
-        marginVertical: 10,
-        color: 'white', // Texto en blanco
-    },
-    carouselContainer: {
-        marginBottom: 20,
-    },
-    carouselBox: {
-        width: 120,
-        height: 120,
-        backgroundColor: '#ffffff', // Cuadros blancos
-        justifyContent: 'center',
-        alignItems: 'center',
-        marginHorizontal: 10,
-        borderRadius: 10,
-        shadowColor: '#000', // Sombra para mejor contraste
-        shadowOffset: { width: 0, height: 2 },
-        shadowOpacity: 0.2,
-        shadowRadius: 4,
-        elevation: 5, // Sombra en Android
-    },
-    boxContainer: {
-        width: '100%',
-        marginTop: 20,
-    },
-    boxListContainer: {
-        marginBottom: 20,
-    },
-    box: {
-        width: '48%',
-        height: 150,
-        backgroundColor: '#ffffff', // Cuadros blancos
-        justifyContent: 'center',
-        alignItems: 'center',
-        marginVertical: 10,
-        marginHorizontal: 5,
-        borderRadius: 10,
-        shadowColor: '#000',
-        shadowOffset: { width: 0, height: 2 },
-        shadowOpacity: 0.2,
-        shadowRadius: 4,
-        elevation: 5,
-    },
-    buttonText: {
-        fontSize: 15,
-        textAlign: "center",
-        color: "#086db8", // Texto azul para contraste
-        fontWeight: 'bold',
-    }
+  container: {
+    flex: 1,
+    backgroundColor: "#086db8",
+  },
+  welcomeText: {
+    fontSize: 30,
+    textAlign: "center",
+    marginTop: 60,
+    color: "white",
+  },
+  title: {
+    fontSize: 24,
+    fontWeight: "bold",
+    marginVertical: 20,
+    marginLeft: 10,
+    color: "white",
+  },
+  subtitle: {
+    fontSize: 20,
+    marginVertical: 10,
+    marginLeft: 10,
+    color: "white",
+  },
+  carouselContainer: {
+    paddingHorizontal: 10,
+    backgroundColor: "#086db8",
+    paddingBottom: 10,
+  },
+  carouselBox: {
+    width: 120,
+    height: 140,
+    backgroundColor: "#ffffff",
+    justifyContent: "center",
+    alignItems: "center",
+    marginRight: 10,
+    borderRadius: 10,
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.2,
+    shadowRadius: 4,
+    elevation: 5,
+  },
+  carouselImage: {
+    width: 60,
+    height: 60,
+    marginBottom: 5,
+    resizeMode: "contain",
+  },
+  courseGrid: {
+    paddingHorizontal: 10,
+    paddingBottom: 20,
+    backgroundColor: "#086db8",
+  },
+  courseBox: {
+    width: "48%",
+    height: 180,
+    backgroundColor: "#ffffff",
+    justifyContent: "center",
+    alignItems: "center",
+    marginVertical: 10,
+    marginHorizontal: "1%",
+    borderRadius: 10,
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.2,
+    shadowRadius: 4,
+    elevation: 5,
+  },
+  courseImage: {
+    width: 70,
+    height: 70,
+    marginBottom: 5,
+    resizeMode: "contain",
+  },
+  courseText: {
+    fontSize: 14,
+    textAlign: "center",
+    color: "#086db8",
+    fontWeight: "bold",
+  },
 });
 
-
-export default HomeScreen;

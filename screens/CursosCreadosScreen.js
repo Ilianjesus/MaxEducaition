@@ -2,60 +2,36 @@ import React from "react";
 import {
   View,
   Text,
-  Button,
   StyleSheet,
   ScrollView,
   TouchableOpacity,
+  Image,
 } from "react-native";
 import { useNavigation } from "@react-navigation/native";
+import cursos from "../models/Cursos"; 
 
 const CursosCreadosScreen = () => {
   const navigation = useNavigation();
+
   return (
     <ScrollView style={styles.container}>
       <Text style={styles.title}>Cursos Creados</Text>
       <Text style={styles.subtitle}>Aquí están los cursos que has creado:</Text>
 
-      {/* Simulación de lista de cursos */}
-      <View style={styles.courseCard}>
-        <Text style={styles.courseTitle}>Curso de React Native</Text>
-        <Text style={styles.courseDescription}>
-          Aprende a crear aplicaciones móviles usando React Native.
-        </Text>
-        <TouchableOpacity
-          style={styles.button}
-          onPress={() => navigation.navigate("CursoCreado")}
-        >
-          <Text style={styles.buttonText}>Ver Curso</Text>
-        </TouchableOpacity>
-      </View>
-
-      <View style={styles.courseCard}>
-        <Text style={styles.courseTitle}>Curso de JavaScript Avanzado</Text>
-        <Text style={styles.courseDescription}>
-          Domina conceptos avanzados de JavaScript para crear aplicaciones
-          dinámicas.
-        </Text>
-        <TouchableOpacity
-          style={styles.button}
-          onPress={() => navigation.navigate("CursoCreado")}
-        >
-          <Text style={styles.buttonText}>Ver Curso</Text>
-        </TouchableOpacity>
-      </View>
-
-      <View style={styles.courseCard}>
-        <Text style={styles.courseTitle}>Curso de UX/UI Design</Text>
-        <Text style={styles.courseDescription}>
-          Mejora tus habilidades para crear interfaces atractivas.
-        </Text>
-        <TouchableOpacity
-          style={styles.button}
-          onPress={() => navigation.navigate("CursoCreado")}
-        >
-          <Text style={styles.buttonText}>Ver Curso</Text>
-        </TouchableOpacity>
-      </View>
+      {cursos.map((curso) => (
+        <View key={curso.id} style={styles.courseCard}>
+          <Image source={curso.imagen} style={styles.courseImage} />
+          <Text style={styles.courseTitle}>{curso.titulo}</Text>
+          <Text style={styles.courseCategory}>{curso.categoria}</Text>
+          <Text style={styles.courseDescription}>{curso.descripcion}</Text>
+          <TouchableOpacity
+            style={styles.button}
+            onPress={() => navigation.navigate("CursoCreado", { curso })}
+          >
+            <Text style={styles.buttonText}>Ver Curso</Text>
+          </TouchableOpacity>
+        </View>
+      ))}
     </ScrollView>
   );
 };
@@ -95,10 +71,22 @@ const styles = StyleSheet.create({
     shadowRadius: 4,
     elevation: 4,
   },
+  courseImage: {
+    width: "100%",
+    height: 150,
+    resizeMode: "contain",
+    marginBottom: 10,
+  },
   courseTitle: {
     fontSize: 18,
     fontWeight: "bold",
     color: "#086db8",
+    marginBottom: 5,
+  },
+  courseCategory: {
+    fontSize: 14,
+    fontWeight: "bold",
+    color: "#555",
     marginBottom: 5,
   },
   courseDescription: {

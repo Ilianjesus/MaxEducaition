@@ -1,34 +1,56 @@
-import React, { useState } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import { View, Text, StyleSheet, TouchableOpacity } from "react-native";
-import Video from "react-native-video"; // Importa el componente Video
+import { Video, Audio } from "expo-av"; // Importa Audio de expo-av
+import { useRoute } from "@react-navigation/native"; // Importar useRoute
 
 const Lesson = () => {
     const [playVideo, setPlayVideo] = useState(false);
+    const videoRef = useRef(null);
+    
+    // Obtener los parámetros de navegación
+    const route = useRoute();
+    const { video, titulo } = route.params; // El 'video' y 'titulo' provienen de Course.js
+
+    useEffect(() => {
+        // Configurar el audio para reproducirse en el altavoz del dispositivo
+        const setAudioMode = async () => {
+            await Audio.setAudioModeAsync({
+                allowsRecordingIOS: false,
+                staysActiveInBackground: false,
+                playsInSilentModeIOS: true,
+                shouldDuckAndroid: false,
+                playThroughEarpieceAndroid: false, // Asegura que no se use el auricular del teléfono
+            });
+        };
+
+        setAudioMode();
+    }, []);
 
     return (
         <View style={styles.container}>
-            <Text style={styles.title}>Nombre de la lección</Text>
+            <Text style={styles.title}>{titulo}</Text> {/* Muestra el título de la lección */}
 
-            <View style={styles.rectanglesContainer}>
-                {playVideo ? (
-                    <Video
-                        source={{uri: "https://drive.google.com/file/d/14B0FVPC8kBtlnqgGgPihQ445K2uiLR_z/view?usp=sharing"}} // Ruta del video
-                        style={styles.video}
-                        controls
-                        resizeMode="contain"
-                    />
-                ) : (
-                    <TouchableOpacity
-                        style={styles.rectangle}
-                        onPress={() => setPlayVideo(true)} // Activa el video al presionar
-                    />
-                )}
-            </View>
+            <TouchableOpacity
+                style={styles.button}
+                onPress={() => setPlayVideo(!playVideo)} // Cambiar entre reproducir y pausar
+            >
+                <Text style={styles.buttonText}>
+                    {playVideo ? "Pausar Video" : "Reproducir Video"}
+                </Text>
+            </TouchableOpacity>
+
+            <Video
+                ref={videoRef}
+                source={typeof video === "number" ? video : null} // Verifica si es un require()
+                style={styles.video}
+                resizeMode="contain"
+                shouldPlay={playVideo}
+                useNativeControls
+/>
+
         </View>
     );
 };
-
-export default Lesson;
 
 const styles = StyleSheet.create({
     title: {
@@ -36,27 +58,29 @@ const styles = StyleSheet.create({
         textAlign: "center",
         marginTop: "5%",
     },
-    rectangle: {
-        width: "100%",
-        height: 250,
-        backgroundColor: "black",
-        borderRadius: 10,
-        marginBottom: 10,
-    },
     video: {
         width: "100%",
         height: 250,
         borderRadius: 10,
-    },
-    rectanglesContainer: {
         marginTop: 20,
-        width: "100%",
-        padding: 10,
     },
     container: {
         flex: 1,
         backgroundColor: "#fff",
         padding: 10,
+        alignItems: "center",
+    },
+    button: {
+        backgroundColor: "#007bff",
+        padding: 10,
+        borderRadius: 5,
+        marginTop: 10,
+    },
+    buttonText: {
+        color: "#fff",
+        fontSize: 16,
+        textAlign: "center",
     },
 });
 
+export default Lesson;

@@ -5,20 +5,37 @@ import {
   StyleSheet,
   TouchableOpacity,
   Button,
+  Alert,
+  Image, // Importamos Image para la foto de perfil
 } from "react-native";
 import { useNavigation } from "@react-navigation/native";
-import { Ionicons } from "@expo/vector-icons";
+import UserModel from "../models/Usuario"; // Importamos el modelo
 
 const ProfileScreen = () => {
   const navigation = useNavigation();
+
+  // Obtenemos los datos del modelo
+  const { name, email, profilePicture, completedCourses, inProgressCourses, createdCourses } = UserModel;
+
+  // Función para cerrar sesión
+  const handleLogout = () => {
+    Alert.alert(
+      "Cerrar sesión",
+      "¿Estás seguro de que quieres salir?",
+      [
+        { text: "Cancelar", style: "cancel" },
+        { text: "Salir", onPress: () => navigation.replace("Login") }
+      ]
+    );
+  };
+
   return (
     <View style={styles.container}>
       {/* Contenedor del perfil */}
       <View style={styles.profileContainer}>
-        <View style={styles.avatar}>
-          <Ionicons name="person" size={50} color="white" />
-        </View>
-        <Text style={styles.email}>Usuario@example.com</Text>
+        <Image source={profilePicture} style={styles.avatar} />
+        <Text style={styles.name}>{name}</Text>
+        <Text style={styles.email}>{email}</Text>
         <Button
           title="Editar Perfil"
           onPress={() => navigation.navigate("ProfileConfig")}
@@ -30,40 +47,36 @@ const ProfileScreen = () => {
       <View style={styles.statsContainer}>
         <View style={styles.statBox}>
           <Text style={styles.counter}>Cursos Completados</Text>
-          <Text style={styles.statNumber}>0</Text>
+          <Text style={styles.statNumber}>{completedCourses.length}</Text>
         </View>
 
         <View style={styles.statBox}>
           <Text style={styles.counter}>Cursos en Progreso</Text>
-          <Text style={styles.statNumber}>0</Text>
+          <Text style={styles.statNumber}>{inProgressCourses.length}</Text>
         </View>
 
         <View style={styles.statBox}>
           <Text style={styles.counter}>Cursos Creados</Text>
-          <Text style={styles.statNumber}>0</Text>
+          <Text style={styles.statNumber}>{createdCourses}</Text>
         </View>
       </View>
 
       {/* Botones */}
-      <TouchableOpacity
-        onPress={() => navigation.navigate("Recommendations")}
-        style={styles.button}
-      >
+      <TouchableOpacity onPress={() => navigation.navigate("Recommendations")} style={styles.button}>
         <Text style={styles.buttonText}>Ir a Recomendaciones</Text>
       </TouchableOpacity>
 
-      <TouchableOpacity
-        onPress={() => navigation.navigate("CreateCourse")}
-        style={styles.button}
-      >
+      <TouchableOpacity onPress={() => navigation.navigate("CreateCourse")} style={styles.button}>
         <Text style={styles.buttonText}>Crear un Curso</Text>
       </TouchableOpacity>
 
-      <TouchableOpacity
-        onPress={() => navigation.navigate("CursosCreados")}
-        style={styles.button}
-      >
+      <TouchableOpacity onPress={() => navigation.navigate("CursosCreados")} style={styles.button}>
         <Text style={styles.buttonText}>Ver Cursos Creados</Text>
+      </TouchableOpacity>
+
+      {/* Botón de Logout */}
+      <TouchableOpacity onPress={handleLogout} style={styles.logoutButton}>
+        <Text style={styles.logoutText}>Cerrar Sesión</Text>
       </TouchableOpacity>
     </View>
   );
@@ -87,10 +100,14 @@ const styles = StyleSheet.create({
     width: 100,
     height: 100,
     borderRadius: 50,
-    backgroundColor: "#086db8",
-    justifyContent: "center",
-    alignItems: "center",
-    marginBottom: 10,
+    borderWidth: 2,
+    borderColor: "#086db8",
+  },
+  name: {
+    fontSize: 18,
+    fontWeight: "bold",
+    color: "#086db8",
+    marginTop: 10,
   },
   email: {
     fontSize: 16,
@@ -138,6 +155,20 @@ const styles = StyleSheet.create({
     marginVertical: 5,
   },
   buttonText: {
+    fontSize: 16,
+    color: "white",
+    fontWeight: "bold",
+  },
+  logoutButton: {
+    backgroundColor: "red",
+    paddingVertical: 12,
+    paddingHorizontal: 20,
+    borderRadius: 12,
+    width: "80%",
+    alignItems: "center",
+    marginVertical: 10,
+  },
+  logoutText: {
     fontSize: 16,
     color: "white",
     fontWeight: "bold",
