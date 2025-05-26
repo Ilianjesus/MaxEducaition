@@ -1,3 +1,5 @@
+//MaxEducations/models/Cursos.js
+
 const cursos = [
   {
     id: "1",
