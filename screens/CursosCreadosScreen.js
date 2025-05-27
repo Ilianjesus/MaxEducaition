@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useEffect, useState } from "react";
 import {
   View,
   Text,
@@ -6,32 +6,75 @@ import {
   ScrollView,
   TouchableOpacity,
   Image,
+  ActivityIndicator,
 } from "react-native";
 import { useNavigation } from "@react-navigation/native";
-import cursos from "../models/Cursos"; 
+import { db } from "../firebaseConfig";
+import { collection, getDocs } from "firebase/firestore";
 
 const CursosCreadosScreen = () => {
   const navigation = useNavigation();
+  const [cursos, setCursos] = useState([]);
+  const [loading, setLoading] = useState(true);
+
+  const fetchCursos = async () => {
+    try {
+      const querySnapshot = await getDocs(collection(db, "cursos"));
+      const cursosArray = querySnapshot.docs.map((doc) => ({
+        id: doc.id,
+        ...doc.data(),
+      }));
+      setCursos(cursosArray);
+    } catch (error) {
+      console.error("Error al obtener los cursos:", error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    fetchCursos();
+  }, []);
+
+  if (loading) {
+    return (
+      <View style={styles.loadingContainer}>
+        <ActivityIndicator size="large" color="#086db8" />
+      </View>
+    );
+  }
 
   return (
     <ScrollView style={styles.container}>
       <Text style={styles.title}>Cursos Creados</Text>
       <Text style={styles.subtitle}>Aquí están los cursos que has creado:</Text>
 
-      {cursos.map((curso) => (
-        <View key={curso.id} style={styles.courseCard}>
-          <Image source={curso.imagen} style={styles.courseImage} />
-          <Text style={styles.courseTitle}>{curso.titulo}</Text>
-          <Text style={styles.courseCategory}>{curso.categoria}</Text>
-          <Text style={styles.courseDescription}>{curso.descripcion}</Text>
-          <TouchableOpacity
-            style={styles.button}
-            onPress={() => navigation.navigate("CursoCreado", { curso })}
-          >
-            <Text style={styles.buttonText}>Ver Curso</Text>
-          </TouchableOpacity>
-        </View>
-      ))}
+      {cursos.length === 0 ? (
+        <Text style={{ textAlign: "center", marginTop: 20 }}>
+          Aún no has creado ningún curso.
+        </Text>
+      ) : (
+        cursos.map((curso) => (
+          <View key={curso.id} style={styles.courseCard}>
+            {curso.imagen ? (
+              <Image source={{ uri: curso.imagen }} style={styles.courseImage} />
+            ) : (
+              <View style={styles.noImage}>
+                <Text style={{ color: "#999" }}>Sin imagen</Text>
+              </View>
+            )}
+            <Text style={styles.courseTitle}>{curso.titulo}</Text>
+            <Text style={styles.courseCategory}>{curso.categoria}</Text>
+            <Text style={styles.courseDescription}>{curso.descripcion}</Text>
+            <TouchableOpacity
+              style={styles.button}
+              onPress={() => navigation.navigate("CursoCreado", { curso })}
+            >
+              <Text style={styles.buttonText}>Ver Curso</Text>
+            </TouchableOpacity>
+          </View>
+        ))
+      )}
     </ScrollView>
   );
 };
@@ -44,6 +87,11 @@ const styles = StyleSheet.create({
     backgroundColor: "#fff",
     paddingHorizontal: 20,
     paddingTop: 20,
+  },
+  loadingContainer: {
+    flex: 1,
+    justifyContent: "center",
+    alignItems: "center",
   },
   title: {
     fontSize: 28,
@@ -74,7 +122,17 @@ const styles = StyleSheet.create({
   courseImage: {
     width: "100%",
     height: 150,
-    resizeMode: "contain",
+    resizeMode: "cover",
+    borderRadius: 8,
+    marginBottom: 10,
+  },
+  noImage: {
+    width: "100%",
+    height: 150,
+    backgroundColor: "#eee",
+    justifyContent: "center",
+    alignItems: "center",
+    borderRadius: 8,
     marginBottom: 10,
   },
   courseTitle: {
