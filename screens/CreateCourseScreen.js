@@ -6,55 +6,65 @@ import {
   TouchableOpacity,
   ScrollView,
   TextInput,
-  Image,
   KeyboardAvoidingView,
   Platform,
 } from "react-native";
-import * as ImagePicker from "expo-image-picker";
+import { db } from "../firebaseConfig";
+import { collection, addDoc, Timestamp } from "firebase/firestore";
+import { doc, setDoc } from "firebase/firestore";
 
 const CreateCourseScreen = () => {
-  const [nivel, setNivel] = useState("");
-  const [numero, setNumero] = useState("");
-  const [imagen, setImage] = useState(null);
+  const [titulo, setTitulo] = useState("");
+  const [imagen, setImagen] = useState("");
+  const [descripcion, setDescripcion] = useState("");
+  const [categoria, setCategoria] = useState("");
+  const [lecciones, setLecciones] = useState([{ titulo: "", video: "" }]);
 
-  // Función para validar que el nivel esté entre 1 y 10
-  const handleNivelChange = (text) => {
-    let num = text.replace(/[^0-9]/g, "");
-
-    if (num !== "") {
-      let parsedNum = parseInt(num, 10);
-      if (parsedNum < 1) {
-        num = "1";
-      } else if (parsedNum > 10) {
-        num = "10";
-      }
-    }
-    setNivel(num);
+  const handleAddLeccion = () => {
+    setLecciones([...lecciones, { titulo: "", video: "" }]);
   };
 
-  // Función para validación de solo números
-  const handleNummeroChange = (text) => {
-    let num = text.replace(/[^0-9]/g, "");
-    setNumero(num);
+  const handleLeccionChange = (index, field, value) => {
+    const nuevasLecciones = [...lecciones];
+    nuevasLecciones[index][field] = value;
+    setLecciones(nuevasLecciones);
   };
 
-  // Función para seleccionar una imagen
-  const handleImagePick = async () => {
-    const { status } = await ImagePicker.requestMediaLibraryPermissionsAsync();
-    if (status !== "granted") {
-      alert("Se requieren permisos para acceder a la galería.");
-      return;
-    }
+  const handleCreateCourse = async () => {
+    const curso = {
+      titulo,
+      imagen,
+      descripcion,
+      categoria,
+      creadoEn: Timestamp.now(),
+    };
 
-    const result = await ImagePicker.launchImageLibraryAsync({
-      mediaTypes: ImagePicker.MediaTypeOptions.Images,
-      allowsEditing: true,
-      aspect: [4, 3],
-      quality: 1,
-    });
+    try {
+      // 1. Crear el curso (sin lecciones)
+      const cursoRef = await addDoc(collection(db, "cursos"), curso);
 
-    if (!result.canceled && result.assets.length > 0) {
-      setImage(result.assets[0].uri);
+      // 2. Agregar cada lección como un documento en la subcolección 'lecciones'
+      const leccionesRef = collection(db, "cursos", cursoRef.id, "lecciones");
+      await Promise.all(
+        lecciones.map((leccion) =>
+          addDoc(leccionesRef, {
+            ...leccion,
+            creadoEn: Timestamp.now(),
+          })
+        )
+      );
+
+      alert("¡Curso creado con éxito!");
+
+      // Limpiar los campos
+      setTitulo("");
+      setImagen("");
+      setDescripcion("");
+      setCategoria("");
+      setLecciones([{ titulo: "", video: "" }]);
+    } catch (error) {
+      console.error("Error al crear curso:", error);
+      alert("Error al crear el curso.");
     }
   };
 
@@ -70,47 +80,64 @@ const CreateCourseScreen = () => {
       >
         <Text style={styles.title}>Crea un curso</Text>
 
-        <Text style={styles.label}>Nombre del curso</Text>
-        <TextInput style={styles.input} placeholder="Nombre del curso" />
+        <Text style={styles.label}>Título del curso</Text>
+        <TextInput
+          style={styles.input}
+          placeholder="Título"
+          value={titulo}
+          onChangeText={setTitulo}
+        />
 
-        <Text style={styles.label}>Breve descripción del curso</Text>
+        <Text style={styles.label}>Imagen del curso (URL)</Text>
+        <TextInput
+          style={styles.input}
+          placeholder="https://..."
+          value={imagen}
+          onChangeText={setImagen}
+        />
+
+        <Text style={styles.label}>Descripción</Text>
         <TextInput
           style={styles.input}
           placeholder="Descripción"
+          value={descripcion}
+          onChangeText={setDescripcion}
           multiline
         />
 
-        <Text style={styles.label}>Categoría del curso</Text>
-        <TextInput style={styles.input} placeholder="Categoría" />
-
-        <Text style={styles.label}>Nivel del curso (1-10)</Text>
+        <Text style={styles.label}>Categoría</Text>
         <TextInput
           style={styles.input}
-          placeholder="Nivel"
-          keyboardType="numeric"
-          value={nivel}
-          onChangeText={handleNivelChange}
+          placeholder="Categoría"
+          value={categoria}
+          onChangeText={setCategoria}
         />
 
-        <Text style={styles.label}>Número de lecciones</Text>
-        <TextInput
-          style={styles.input}
-          placeholder="Número de lecciones"
-          keyboardType="numeric"
-          value={numero}
-          onChangeText={handleNummeroChange}
-        />
+        <Text style={styles.label}>Lecciones</Text>
+        {lecciones.map((leccion, index) => (
+          <View key={index} style={styles.lessonBlock}>
+            <Text style={styles.subLabel}>Título de la lección {index + 1}</Text>
+            <TextInput
+              style={styles.input}
+              placeholder="Título"
+              value={leccion.titulo}
+              onChangeText={(text) => handleLeccionChange(index, "titulo", text)}
+            />
+            <Text style={styles.subLabel}>Video (URL)</Text>
+            <TextInput
+              style={styles.input}
+              placeholder="https://..."
+              value={leccion.video}
+              onChangeText={(text) => handleLeccionChange(index, "video", text)}
+            />
+          </View>
+        ))}
 
-        <Text style={styles.label}>Imagen del curso</Text>
-        {imagen && <Image source={{ uri: imagen }} style={styles.image} />}
-        <TouchableOpacity style={styles.button} onPress={handleImagePick}>
-          <Text style={styles.buttonText}>Seleccionar imagen</Text>
+        <TouchableOpacity style={styles.buttonSecondary} onPress={handleAddLeccion}>
+          <Text style={styles.buttonText}>+ Agregar Lección</Text>
         </TouchableOpacity>
 
-        <TouchableOpacity
-          style={styles.button}
-          onPress={() => alert("Curso creado con éxito!")}
-        >
+        <TouchableOpacity style={styles.buttonSecondary} onPress={handleCreateCourse}>
           <Text style={styles.buttonText}>Crear Curso</Text>
         </TouchableOpacity>
       </ScrollView>
@@ -119,6 +146,9 @@ const CreateCourseScreen = () => {
 };
 
 export default CreateCourseScreen;
+
+// (Estilos igual que antes — no modificados)
+
 
 const styles = StyleSheet.create({
   container: {
@@ -140,6 +170,12 @@ const styles = StyleSheet.create({
     marginTop: 10,
     color: "#086db8",
   },
+  subLabel: {
+    fontSize: 14,
+    marginBottom: 5,
+    marginTop: 5,
+    color: "#086db8",
+  },
   input: {
     height: 45,
     borderColor: "#086db8",
@@ -151,13 +187,12 @@ const styles = StyleSheet.create({
     fontSize: 16,
     color: "#333",
   },
-  image: {
-    width: 200,
-    height: 200,
-    alignSelf: "center",
-    marginVertical: 10,
+  lessonBlock: {
+    marginBottom: 15,
+    backgroundColor: "#f2faff",
+    padding: 10,
     borderRadius: 12,
-    borderWidth: 2,
+    borderWidth: 1,
     borderColor: "#086db8",
   },
   button: {
@@ -167,8 +202,17 @@ const styles = StyleSheet.create({
     alignItems: "center",
     marginTop: 15,
   },
+  buttonSecondary: {
+    backgroundColor: "#f2faff",
+    borderWidth: 1,
+    borderColor: "#086db8",
+    paddingVertical: 10,
+    borderRadius: 12,
+    alignItems: "center",
+    marginTop: 10,
+  },
   buttonText: {
-    color: "#fff",
+    color: "#086db8",
     fontSize: 16,
     fontWeight: "bold",
   },

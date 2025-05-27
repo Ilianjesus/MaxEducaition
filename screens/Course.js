@@ -1,23 +1,44 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { View, Text, StyleSheet, TouchableOpacity, ScrollView, Image } from "react-native";
 import { useNavigation, useRoute } from "@react-navigation/native";
+import { collection, getDocs } from "firebase/firestore";
+import { db } from "../firebaseConfig";
 
 const Course = () => {
   const navigation = useNavigation();
   const route = useRoute();
   const { curso } = route.params;
+  const [lecciones, setLecciones] = useState([]);
   const [showDescription, setShowDescription] = useState(false);
 
-  // Función para navegar a la lección
+  useEffect(() => {
+    const fetchLecciones = async () => {
+      try {
+        const leccionesRef = collection(db, "cursos", curso.id, "lecciones");
+        const snapshot = await getDocs(leccionesRef);
+        const leccionesData = snapshot.docs.map((doc) => ({
+          id: doc.id,
+          ...doc.data(),
+        }));
+        setLecciones(leccionesData);
+      } catch (error) {
+        console.error("Error al obtener las lecciones:", error);
+      }
+    };
+
+    fetchLecciones();
+  }, [curso.id]);
+
   const goToLesson = (video, titulo) => {
     navigation.navigate("Lesson", { video, titulo });
-};
-
+  };
 
   return (
     <ScrollView style={styles.container}>
       <Text style={styles.title}>{curso.titulo}</Text>
-      <Image style={styles.imagecourse} source={curso.imagen} />
+
+      <Image style={styles.imagecourse} source={{ uri: curso.imagen }} />
+
       <Text style={styles.subtitle}>Categoría</Text>
       <Text style={styles.text}>{curso.categoria}</Text>
 
@@ -29,18 +50,26 @@ const Course = () => {
       {showDescription && <Text style={styles.text}>{curso.descripcion}</Text>}
 
       <Text style={styles.subtitle}>Lecciones</Text>
-      {curso.lecciones.map((leccion, index) => (
-        <TouchableOpacity
-        key={index}
-        style={styles.rectangle}
-        onPress={() => goToLesson(leccion.video ? leccion.video : leccion.titulo)} // Cambiar esto si 'video' no existe
-        > 
-    <Text style={styles.lessonText}>{leccion.titulo}</Text>
-    </TouchableOpacity>
-      ))}
+
+      {lecciones.length > 0 ? (
+        lecciones.map((leccion) => (
+          <TouchableOpacity
+            key={leccion.id}
+            style={styles.rectangle}
+            onPress={() => goToLesson(leccion.video || "", leccion.titulo)}
+          >
+            <Text style={styles.lessonText}>{leccion.titulo}</Text>
+          </TouchableOpacity>
+        ))
+      ) : (
+        <Text style={styles.text}>Este curso aún no tiene lecciones.</Text>
+      )}
     </ScrollView>
   );
 };
+
+export default Course;
+
 const styles = StyleSheet.create({
   container: {
     flex: 1,
@@ -88,5 +117,3 @@ const styles = StyleSheet.create({
     fontWeight: "bold",
   },
 });
-
-export default Course;

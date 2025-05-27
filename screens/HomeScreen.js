@@ -1,30 +1,76 @@
-import React from "react";
-import { View, Text, StyleSheet, TouchableOpacity, FlatList, Image } from "react-native";
+import React, { useEffect, useState } from "react";
+import { View, Text, StyleSheet, TouchableOpacity, FlatList, Image, ActivityIndicator } from "react-native";
 import { useNavigation } from "@react-navigation/native";
-import cursos from "../models/Cursos";
+import { collection, getDocs } from "firebase/firestore";
+import { db } from "../firebaseConfig"; // Asegúrate de tener este archivo configurado
 
 const HomeScreen = () => {
   const navigation = useNavigation();
+  const [cursos, setCursos] = useState([]);
+  const [loading, setLoading] = useState(true);
 
   const goToCourse = (curso) => {
     navigation.navigate("Course", { curso });
   };
 
+  const fetchCursos = async () => {
+    try {
+      const cursosRef = collection(db, "cursos");
+      const snapshot = await getDocs(cursosRef);
+
+      const cursosData = await Promise.all(snapshot.docs.map(async doc => {
+        const curso = { id: doc.id, ...doc.data() };
+
+        // Obtener lecciones
+        const leccionesSnapshot = await getDocs(collection(db, `cursos/${doc.id}/lecciones`));
+        curso.lecciones = leccionesSnapshot.docs.map(lec => ({
+          id: lec.id,
+          ...lec.data()
+        }));
+
+        return curso;
+      }));
+
+      setCursos(cursosData);
+    } catch (error) {
+      console.error("Error cargando cursos:", error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    fetchCursos();
+  }, []);
+
   const renderCourseItem = ({ item, isTop }) => (
     <TouchableOpacity onPress={() => goToCourse(item)} style={isTop ? styles.carouselBox : styles.courseBox}>
-      <Image source={item.imagen} style={isTop ? styles.carouselImage : styles.courseImage} />
+      <Image source={{ uri: item.imagen }} style={isTop ? styles.carouselImage : styles.courseImage} />
       <Text style={styles.courseText}>{item.titulo}</Text>
     </TouchableOpacity>
   );
 
+  const topCursos = cursos.slice(0, 10);
+  const allCursos = cursos.slice(10);
+
+  if (loading) {
+    return (
+      <View style={styles.loadingContainer}>
+        <ActivityIndicator size="large" color="#0000ff" />
+        <Text>Cargando cursos...</Text>
+      </View>
+    );
+  }
+
   return (
-    <FlatList style={styles.container}
+    <FlatList
+      style={styles.container}
       ListHeaderComponent={
         <>
           <Text style={styles.welcomeText}>Bienvenido Ilian!</Text>
           <Text style={styles.title}>Top 10</Text>
           <FlatList
-            data={cursos.slice(0, 10)}
+            data={topCursos}
             renderItem={({ item }) => renderCourseItem({ item, isTop: true })}
             keyExtractor={(item) => item.id}
             horizontal
@@ -33,7 +79,7 @@ const HomeScreen = () => {
           <Text style={styles.subtitle}>Todos los cursos</Text>
         </>
       }
-      data={cursos.slice(10)}
+      data={allCursos}
       renderItem={({ item }) => renderCourseItem({ item, isTop: false })}
       keyExtractor={(item) => item.id}
       numColumns={2}
@@ -125,3 +171,4 @@ const styles = StyleSheet.create({
     fontWeight: "bold",
   },
 });
+
