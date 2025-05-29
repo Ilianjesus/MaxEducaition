@@ -1,23 +1,39 @@
-import React from "react";
+import React, { useEffect, useState } from "react";
 import {
-  View,
-  Text,
-  StyleSheet,
-  TouchableOpacity,
-  Button,
-  Alert,
-  Image, // Importamos Image para la foto de perfil
+  View, Text, StyleSheet, TouchableOpacity, Alert, Image
 } from "react-native";
 import { useNavigation } from "@react-navigation/native";
-import UserModel from "../models/Usuario"; // Importamos el modelo
+import { getAuth } from "firebase/auth";
+import { collection, query, where, getDocs } from "firebase/firestore";
+import { db } from "../firebaseConfig";
 
 const ProfileScreen = () => {
   const navigation = useNavigation();
+  const user = getAuth().currentUser;
 
-  // Obtenemos los datos del modelo
-  const { name, email, profilePicture, completedCourses, inProgressCourses, createdCourses } = UserModel;
+  const name = user?.displayName || "Sin nombre";
+  const email = user?.email || "Correo no disponible";
+  const profilePicture = user?.photoURL || "https://via.placeholder.com/100";
+  const [createdCourses, setCreatedCourses] = useState(0);
 
-  // Función para cerrar sesión
+  useEffect(() => {
+    const fetchCoursesCount = async () => {
+      if (!user) return;
+      try {
+        const q = query(
+          collection(db, "cursos"),
+          where("creadorId", "==", user.uid)
+        );
+        const snapshot = await getDocs(q);
+        setCreatedCourses(snapshot.size); // Número total de cursos
+      } catch (error) {
+        console.error("Error al cargar cursos:", error);
+      }
+    };
+
+    fetchCoursesCount();
+  }, [user]);
+
   const handleLogout = () => {
     Alert.alert(
       "Cerrar sesión",
@@ -31,37 +47,25 @@ const ProfileScreen = () => {
 
   return (
     <View style={styles.container}>
-      {/* Contenedor del perfil */}
       <View style={styles.profileContainer}>
-        <Image source={profilePicture} style={styles.avatar} />
+        <Image source={{ uri: profilePicture }} style={styles.avatar} />
         <Text style={styles.name}>{name}</Text>
         <Text style={styles.email}>{email}</Text>
-        <Button
-          title="Editar Perfil"
+        <TouchableOpacity
           onPress={() => navigation.navigate("ProfileConfig")}
-          color="#086db8"
-        />
+          style={styles.button}
+        >
+          <Text style={styles.buttonText}>Editar Perfil</Text>
+        </TouchableOpacity>
       </View>
 
-      {/* Contadores de cursos */}
       <View style={styles.statsContainer}>
-        <View style={styles.statBox}>
-          <Text style={styles.counter}>Cursos Completados</Text>
-          <Text style={styles.statNumber}>{completedCourses.length}</Text>
-        </View>
-
-        <View style={styles.statBox}>
-          <Text style={styles.counter}>Cursos en Progreso</Text>
-          <Text style={styles.statNumber}>{inProgressCourses.length}</Text>
-        </View>
-
         <View style={styles.statBox}>
           <Text style={styles.counter}>Cursos Creados</Text>
           <Text style={styles.statNumber}>{createdCourses}</Text>
         </View>
       </View>
 
-      {/* Botones */}
       <TouchableOpacity onPress={() => navigation.navigate("Recommendations")} style={styles.button}>
         <Text style={styles.buttonText}>Ir a Recomendaciones</Text>
       </TouchableOpacity>
@@ -74,7 +78,6 @@ const ProfileScreen = () => {
         <Text style={styles.buttonText}>Ver Cursos Creados</Text>
       </TouchableOpacity>
 
-      {/* Botón de Logout */}
       <TouchableOpacity onPress={handleLogout} style={styles.logoutButton}>
         <Text style={styles.logoutText}>Cerrar Sesión</Text>
       </TouchableOpacity>
@@ -83,6 +86,8 @@ const ProfileScreen = () => {
 };
 
 export default ProfileScreen;
+
+
 
 const styles = StyleSheet.create({
   container: {

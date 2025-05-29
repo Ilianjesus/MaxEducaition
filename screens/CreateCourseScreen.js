@@ -12,6 +12,7 @@ import {
 import { db } from "../firebaseConfig";
 import { collection, addDoc, Timestamp } from "firebase/firestore";
 import { doc, setDoc } from "firebase/firestore";
+import { auth } from "../firebaseConfig";
 
 const CreateCourseScreen = () => {
   const [titulo, setTitulo] = useState("");
@@ -31,12 +32,19 @@ const CreateCourseScreen = () => {
   };
 
   const handleCreateCourse = async () => {
+    const user = auth.currentUser;
+    if (!user) {
+      alert("Debes iniciar sesión para crear un curso.");
+      return;
+    }
+    
     const curso = {
       titulo,
       imagen,
       descripcion,
       categoria,
       creadoEn: Timestamp.now(),
+      creadorId: user.uid, // ID del usuario creador
     };
 
     try {

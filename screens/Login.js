@@ -4,20 +4,38 @@ import {
     KeyboardAvoidingView, ScrollView, TouchableWithoutFeedback, Keyboard, Platform
 } from "react-native";
 import { useNavigation } from "@react-navigation/native";
-import usuarios from "../models/Usuario"; // Importamos el modelo de usuarios
+import { signInWithEmailAndPassword, createUserWithEmailAndPassword } from "firebase/auth";
+import { auth } from "../firebaseConfig"; // Usa tu archivo de configuración
 
 const Login = () => {
     const navigation = useNavigation();
     const [email, setEmail] = useState("");
     const [password, setPassword] = useState("");
 
-    const handleLogin = () => {
-        if (email === usuarios.email && password === usuarios.password) {
-            navigation.replace("MyTabs"); // Navegar si los datos son correctos
-        } else {
+    const handleLogin = async () => {
+        try {
+            const userCredential = await signInWithEmailAndPassword(auth, email, password);
+            const user = userCredential.user;
+            console.log("Usuario autenticado:", user.email);
+            navigation.replace("MyTabs"); // Redirigir tras login exitoso
+        } catch (error) {
+            console.error("Error al iniciar sesión:", error);
             Alert.alert("Error", "Correo o contraseña incorrectos");
         }
     };
+
+    const handleCreateAccount = async () => {
+        createUserWithEmailAndPassword(auth, email, password)
+            .then((userCredential) => {
+                console.log("Cuenta creada:")
+                const user = userCredential.user;
+                console.log(user)
+            })
+            .catch((error) => {
+                console.error("Error al crear cuenta:", error);
+                Alert.alert("Error", "No se pudo crear la cuenta. Inténtalo de nuevo.");
+            });
+    }
 
     return (
         <KeyboardAvoidingView 
@@ -57,6 +75,10 @@ const Login = () => {
 
                         <TouchableOpacity style={styles.button} onPress={handleLogin}>
                             <Text style={styles.buttonText}>Iniciar sesión</Text>
+                        </TouchableOpacity>
+
+                        <TouchableOpacity style={styles.button} onPress={handleCreateAccount}>
+                            <Text style={styles.buttonText}>Crear cuenta</Text>
                         </TouchableOpacity>
                     </View>
                 </ScrollView>
