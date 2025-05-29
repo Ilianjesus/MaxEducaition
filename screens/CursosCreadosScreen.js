@@ -7,10 +7,11 @@ import {
   TouchableOpacity,
   Image,
   ActivityIndicator,
+  Alert,
 } from "react-native";
 import { useNavigation } from "@react-navigation/native";
-import { db } from "../firebaseConfig";
-import { collection, getDocs } from "firebase/firestore";
+import { db, auth } from "../firebaseConfig";
+import { collection, getDocs, deleteDoc, doc } from "firebase/firestore";
 
 const CursosCreadosScreen = () => {
   const navigation = useNavigation();
@@ -20,16 +21,43 @@ const CursosCreadosScreen = () => {
   const fetchCursos = async () => {
     try {
       const querySnapshot = await getDocs(collection(db, "cursos"));
-      const cursosArray = querySnapshot.docs.map((doc) => ({
-        id: doc.id,
-        ...doc.data(),
-      }));
+      const currentUserUid = auth.currentUser.uid;
+
+      const cursosArray = querySnapshot.docs
+        .map((doc) => ({
+          id: doc.id,
+          ...doc.data(),
+        }))
+        .filter((curso) => curso.creadorUid === currentUserUid); // Mostrar solo los cursos creados por el usuario
+
       setCursos(cursosArray);
     } catch (error) {
       console.error("Error al obtener los cursos:", error);
     } finally {
       setLoading(false);
     }
+  };
+
+  const eliminarCurso = async (cursoId) => {
+    try {
+      await deleteDoc(doc(db, "cursos", cursoId));
+      setCursos((prevCursos) => prevCursos.filter((curso) => curso.id !== cursoId));
+      Alert.alert("Curso eliminado", "El curso ha sido eliminado correctamente.");
+    } catch (error) {
+      console.error("Error al eliminar el curso:", error);
+      Alert.alert("Error", "No se pudo eliminar el curso.");
+    }
+  };
+
+  const confirmarEliminacion = (cursoId) => {
+    Alert.alert(
+      "Eliminar curso",
+      "¿Estás seguro de que quieres eliminar este curso?",
+      [
+        { text: "Cancelar", style: "cancel" },
+        { text: "Eliminar", style: "destructive", onPress: () => eliminarCurso(cursoId) },
+      ]
+    );
   };
 
   useEffect(() => {
@@ -66,12 +94,22 @@ const CursosCreadosScreen = () => {
             <Text style={styles.courseTitle}>{curso.titulo}</Text>
             <Text style={styles.courseCategory}>{curso.categoria}</Text>
             <Text style={styles.courseDescription}>{curso.descripcion}</Text>
-            <TouchableOpacity
-              style={styles.button}
-              onPress={() => navigation.navigate("CursoCreado", { curso })}
-            >
-              <Text style={styles.buttonText}>Ver Curso</Text>
-            </TouchableOpacity>
+
+            <View style={{ flexDirection: "row", justifyContent: "space-between", marginTop: 10 }}>
+              <TouchableOpacity
+                style={[styles.button, { flex: 1, marginRight: 5 }]}
+                onPress={() => navigation.navigate("CursoCreado", { curso })}
+              >
+                <Text style={styles.buttonText}>Editar</Text>
+              </TouchableOpacity>
+
+              <TouchableOpacity
+                style={[styles.button, { backgroundColor: "#b80808", flex: 1, marginLeft: 5 }]}
+                onPress={() => confirmarEliminacion(curso.id)}
+              >
+                <Text style={styles.buttonText}>Eliminar</Text>
+              </TouchableOpacity>
+            </View>
           </View>
         ))
       )}
@@ -80,6 +118,7 @@ const CursosCreadosScreen = () => {
 };
 
 export default CursosCreadosScreen;
+
 
 const styles = StyleSheet.create({
   container: {

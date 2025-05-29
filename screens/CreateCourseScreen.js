@@ -44,7 +44,7 @@ const CreateCourseScreen = () => {
       descripcion,
       categoria,
       creadoEn: Timestamp.now(),
-      creadorId: user.uid, // ID del usuario creador
+      creadorUid: user.uid, // ID del usuario creador
     };
 
     try {
