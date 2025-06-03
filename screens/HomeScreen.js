@@ -3,15 +3,25 @@ import { View, Text, StyleSheet, TouchableOpacity, FlatList, Image, ActivityIndi
 import { useNavigation } from "@react-navigation/native";
 import { collection, getDocs } from "firebase/firestore";
 import { db } from "../firebaseConfig"; // Asegúrate de tener este archivo configurado
+import { RefreshControl } from "react-native";
 
 const HomeScreen = () => {
   const navigation = useNavigation();
   const [cursos, setCursos] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [refreshing, setRefreshing] = useState(false);
+
 
   const goToCourse = (curso) => {
     navigation.navigate("Course", { curso });
   };
+
+  const onRefresh = async () => {
+    setRefreshing(true);
+    await fetchCursos();
+    setRefreshing(false);
+  };
+  
 
   const fetchCursos = async () => {
     try {
@@ -65,9 +75,16 @@ const HomeScreen = () => {
   return (
     <FlatList
       style={styles.container}
+      refreshControl={
+        <RefreshControl
+          refreshing={refreshing}
+          onRefresh={onRefresh}
+          colors={["#086db8"]}
+        />
+      }
       ListHeaderComponent={
         <>
-          <Text style={styles.welcomeText}>Bienvenido Ilian!</Text>
+          <Text style={styles.welcomeText}>Bienvenido!</Text>
           <Text style={styles.title}>Top 10</Text>
           <FlatList
             data={topCursos}

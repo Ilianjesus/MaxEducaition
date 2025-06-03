@@ -1,6 +1,6 @@
 import React, { useState } from "react";
-import { 
-    View, Text, StyleSheet, TextInput, Image, TouchableOpacity, Alert, 
+import {
+    View, Text, StyleSheet, TextInput, Image, TouchableOpacity, Alert,
     KeyboardAvoidingView, ScrollView, TouchableWithoutFeedback, Keyboard, Platform
 } from "react-native";
 import { useNavigation } from "@react-navigation/native";
@@ -38,53 +38,60 @@ const Login = () => {
     }
 
     return (
-        <KeyboardAvoidingView 
-            behavior={Platform.OS === "ios" ? "padding" : "height"} 
+        <KeyboardAvoidingView
             style={styles.container}
+            behavior={Platform.OS === "ios" ? "padding" : undefined}
+            keyboardVerticalOffset={Platform.OS === "ios" ? 64 : 0}
         >
             <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
-                <ScrollView contentContainerStyle={styles.scrollContainer}>
-                    <Text style={styles.title}>Iniciar sesión</Text>
-                    <Image style={styles.logo} source={require("../assets/logo.png")} />
+                <View style={styles.container}>
+                    <ScrollView
+                        contentContainerStyle={styles.scrollContainer}
+                        keyboardShouldPersistTaps="handled"
+                    >
+                        <Text style={styles.title}>Iniciar sesión</Text>
+                        <Image style={styles.logo} source={require("../assets/logo.png")} />
 
-                    <View style={styles.container2}>
-                        <Text style={styles.MaxEducation}>MAX EDUCATION</Text>
+                        <View style={styles.container2}>
+                            <Text style={styles.MaxEducation}>MAX EDUCATION</Text>
 
-                        <Text style={[styles.subtitle, { marginBottom: 30, fontWeight: "700", fontSize: 30 }]}>
-                            Datos de acceso
-                        </Text>
+                            <Text style={[styles.subtitle, { marginBottom: 30, fontWeight: "700", fontSize: 30 }]}>
+                                Datos de acceso
+                            </Text>
 
-                        <Text style={styles.subtitle}>Correo</Text>
-                        <TextInput
-                            style={styles.input}
-                            value={email}
-                            onChangeText={setEmail}
-                            placeholder="Correo"
-                            autoCapitalize="none"
-                            keyboardType="email-address"
-                        />
+                            <Text style={styles.subtitle}>Correo</Text>
+                            <TextInput
+                                style={styles.input}
+                                value={email}
+                                onChangeText={setEmail}
+                                placeholder="Correo"
+                                autoCapitalize="none"
+                                keyboardType="email-address"
+                            />
 
-                        <Text style={styles.subtitle}>Contraseña</Text>
-                        <TextInput
-                            style={styles.input}
-                            value={password}
-                            onChangeText={setPassword}
-                            placeholder="Ingresa tu contraseña"
-                            secureTextEntry
-                        />
+                            <Text style={styles.subtitle}>Contraseña</Text>
+                            <TextInput
+                                style={styles.input}
+                                value={password}
+                                onChangeText={setPassword}
+                                placeholder="Ingresa tu contraseña"
+                                secureTextEntry
+                            />
 
-                        <TouchableOpacity style={styles.button} onPress={handleLogin}>
-                            <Text style={styles.buttonText}>Iniciar sesión</Text>
-                        </TouchableOpacity>
+                            <TouchableOpacity style={styles.button} onPress={handleLogin}>
+                                <Text style={styles.buttonText}>Iniciar sesión</Text>
+                            </TouchableOpacity>
 
-                        <TouchableOpacity style={styles.button} onPress={handleCreateAccount}>
-                            <Text style={styles.buttonText}>Crear cuenta</Text>
-                        </TouchableOpacity>
-                    </View>
-                </ScrollView>
+                            <TouchableOpacity style={styles.button} onPress={handleCreateAccount}>
+                                <Text style={styles.buttonText}>Crear cuenta</Text>
+                            </TouchableOpacity>
+                        </View>
+                    </ScrollView>
+                </View>
             </TouchableWithoutFeedback>
         </KeyboardAvoidingView>
     );
+
 };
 
 export default Login;
@@ -106,7 +113,7 @@ const styles = StyleSheet.create({
         borderTopLeftRadius: 70,
         borderTopRightRadius: 70,
         borderBottomLeftRadius: 70,
-        
+
         padding: 40,
         alignItems: "center",
     },

@@ -37,7 +37,7 @@ const CreateCourseScreen = () => {
       alert("Debes iniciar sesión para crear un curso.");
       return;
     }
-    
+
     const curso = {
       titulo,
       imagen,
@@ -145,9 +145,13 @@ const CreateCourseScreen = () => {
           <Text style={styles.buttonText}>+ Agregar Lección</Text>
         </TouchableOpacity>
 
-        <TouchableOpacity style={styles.buttonSecondary} onPress={handleCreateCourse}>
+        <TouchableOpacity
+          style={[styles.buttonSecondary, { marginBottom: 60 }]}
+          onPress={handleCreateCourse}
+        >
           <Text style={styles.buttonText}>Crear Curso</Text>
         </TouchableOpacity>
+
       </ScrollView>
     </KeyboardAvoidingView>
   );

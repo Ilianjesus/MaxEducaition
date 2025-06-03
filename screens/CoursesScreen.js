@@ -1,90 +1,69 @@
+import React, { useEffect, useState } from "react";
+import { View, Text, StyleSheet, TouchableOpacity, ScrollView, ActivityIndicator } from "react-native";
 import { useNavigation } from "@react-navigation/native";
-import React, { useState } from "react";
-import { View, Text, StyleSheet, TouchableOpacity, ScrollView } from "react-native";
-import usuarios from "../models/Usuario"; // Importar los datos del usuario
-import cursos from "../models/Cursos"; // Importar los cursos
+import { getFirestore, collection, getDocs } from "firebase/firestore";
 
 const CourseScreen = () => {
     const navigation = useNavigation();
-    const [filter, setFilter] = useState("todos");
+    const [randomCourses, setRandomCourses] = useState([]);
+    const [loading, setLoading] = useState(true);
 
-    // Obtener los cursos del usuario
-    const { completedCourses, inProgressCourses } = usuarios;
+    const db = getFirestore();
 
-    // Filtrar cursos según el estado seleccionado
-    const filteredCourses = cursos.filter((curso) => {
-        if (filter === "completados") {
-            return completedCourses.includes(parseInt(curso.id));
-        }
-        if (filter === "en curso") {
-            return inProgressCourses.includes(parseInt(curso.id));
-        }
-        return completedCourses.includes(parseInt(curso.id)) || inProgressCourses.includes(parseInt(curso.id));
-    });
+    useEffect(() => {
+        const fetchCourses = async () => {
+            setLoading(true);
+            try {
+                const cursosRef = collection(db, "cursos");
+                const cursosSnap = await getDocs(cursosRef);
+                const allCourses = cursosSnap.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+
+                // Seleccionar cursos aleatorios (por ejemplo, 5)
+                const shuffled = allCourses.sort(() => 0.5 - Math.random());
+                const selected = shuffled.slice(0, 5);
+                setRandomCourses(selected);
+            } catch (error) {
+                console.error("Error al cargar cursos:", error);
+            }
+            setLoading(false);
+        };
+
+        fetchCourses();
+    }, []);
 
     return (
         <View style={{ flex: 1, marginTop: 40 }}>
-            <Text style={styles.title}>Mis Cursos</Text>
+            <Text style={styles.title}>Cursos Recomendados</Text>
 
-            {/* Botones de filtro */}
-            <View style={styles.buttonContainer}>
-                <TouchableOpacity style={styles.button} onPress={() => setFilter("todos")}>
-                    <Text style={styles.buttonText}>Todos</Text>
-                </TouchableOpacity>
-                <TouchableOpacity style={styles.button} onPress={() => setFilter("en curso")}>
-                    <Text style={styles.buttonText}>En curso</Text>
-                </TouchableOpacity>
-                <TouchableOpacity style={styles.button} onPress={() => setFilter("completados")}>
-                    <Text style={styles.buttonText}>Completados</Text>
-                </TouchableOpacity>
-            </View>
-
-            {/* Lista de cursos */}
-            <ScrollView style={styles.rectanglesContainer} contentContainerStyle={{ alignItems: "center" }}>
-                {filteredCourses.length > 0 ? (
-                    filteredCourses.map((curso) => (
-                        <TouchableOpacity
-                            key={curso.id}
-                            style={styles.rectangle}
-                            onPress={() => navigation.navigate("Course", { curso })}
+            {loading ? (
+                <ActivityIndicator size="large" color="#086db8" />
+            ) : (
+                <ScrollView style={styles.rectanglesContainer} contentContainerStyle={{ alignItems: "center" }}>
+                    {randomCourses.length > 0 ? (
+                        randomCourses.map((curso) => (
+                            <TouchableOpacity
+                                key={curso.id}
+                                style={styles.rectangle}
+                                onPress={() => navigation.navigate("Course", { curso })}
                             >
-                            <Text style={styles.courseTitle}>{curso.titulo}</Text>
-                        </TouchableOpacity>
-                    ))
-                ) : (
-                    <Text style={styles.noCoursesText}>No hay cursos en esta categoría</Text>
-                )}
-            </ScrollView>
+                                <Text style={styles.courseTitle}>{curso.titulo}</Text>
+                            </TouchableOpacity>
+                        ))
+                    ) : (
+                        <Text style={styles.noCoursesText}>No hay cursos disponibles por el momento.</Text>
+                    )}
+                </ScrollView>
+            )}
         </View>
     );
 };
 
-// Estilos
 const styles = StyleSheet.create({
     title: {
         fontSize: 30,
         textAlign: "center",
         marginTop: "5%",
         marginBottom: 20,
-    },
-    buttonContainer: {
-        flexDirection: "row",
-        justifyContent: "space-between",
-        alignItems: "center",
-        marginBottom: 30,
-        paddingHorizontal: 10,
-    },
-    button: {
-        flex: 1,
-        backgroundColor: "#007bff",
-        paddingVertical: 10,
-        marginHorizontal: 5,
-        borderRadius: 10,
-        alignItems: "center",
-    },
-    buttonText: {
-        color: "white",
-        fontWeight: "bold",
     },
     rectanglesContainer: {
         width: "100%",

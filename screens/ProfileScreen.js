@@ -1,6 +1,15 @@
 import React, { useEffect, useState } from "react";
 import {
-  View, Text, StyleSheet, TouchableOpacity, Alert, Image
+  View,
+  Text,
+  StyleSheet,
+  TouchableOpacity,
+  Alert,
+  Image,
+  Modal,
+  Pressable,
+  ScrollView,
+  RefreshControl,
 } from "react-native";
 import { useNavigation } from "@react-navigation/native";
 import { getAuth } from "firebase/auth";
@@ -14,41 +23,57 @@ const ProfileScreen = () => {
   const name = user?.displayName || "Sin nombre";
   const email = user?.email || "Correo no disponible";
   const profilePicture = user?.photoURL || "https://via.placeholder.com/100";
+
   const [createdCourses, setCreatedCourses] = useState(0);
+  const [modalVisible, setModalVisible] = useState(false);
+  const [refreshing, setRefreshing] = useState(false);
+
+  const fetchCoursesCount = async () => {
+    if (!user) return;
+    try {
+      const q = query(
+        collection(db, "cursos"),
+        where("creadorId", "==", user.uid)
+      );
+      const snapshot = await getDocs(q);
+      setCreatedCourses(snapshot.size);
+    } catch (error) {
+      console.error("Error al cargar cursos:", error);
+    }
+  };
+
+  const onRefresh = async () => {
+    setRefreshing(true);
+    await fetchCoursesCount();
+    setRefreshing(false);
+  };
 
   useEffect(() => {
-    const fetchCoursesCount = async () => {
-      if (!user) return;
-      try {
-        const q = query(
-          collection(db, "cursos"),
-          where("creadorId", "==", user.uid)
-        );
-        const snapshot = await getDocs(q);
-        setCreatedCourses(snapshot.size); // Número total de cursos
-      } catch (error) {
-        console.error("Error al cargar cursos:", error);
-      }
-    };
-
     fetchCoursesCount();
   }, [user]);
 
   const handleLogout = () => {
-    Alert.alert(
-      "Cerrar sesión",
-      "¿Estás seguro de que quieres salir?",
-      [
-        { text: "Cancelar", style: "cancel" },
-        { text: "Salir", onPress: () => navigation.replace("Login") }
-      ]
-    );
+    Alert.alert("Cerrar sesión", "¿Estás seguro de que quieres salir?", [
+      { text: "Cancelar", style: "cancel" },
+      { text: "Salir", onPress: () => navigation.replace("Login") },
+    ]);
   };
 
   return (
-    <View style={styles.container}>
+    <ScrollView
+      contentContainerStyle={styles.container}
+      refreshControl={
+        <RefreshControl
+          refreshing={refreshing}
+          onRefresh={onRefresh}
+          colors={["#086db8"]}
+        />
+      }
+    >
       <View style={styles.profileContainer}>
-        <Image source={{ uri: profilePicture }} style={styles.avatar} />
+        <TouchableOpacity onPress={() => setModalVisible(true)}>
+          <Image source={{ uri: profilePicture }} style={styles.avatar} />
+        </TouchableOpacity>
         <Text style={styles.name}>{name}</Text>
         <Text style={styles.email}>{email}</Text>
         <TouchableOpacity
@@ -66,32 +91,41 @@ const ProfileScreen = () => {
         </View>
       </View>
 
-      <TouchableOpacity onPress={() => navigation.navigate("Recommendations")} style={styles.button}>
-        <Text style={styles.buttonText}>Ir a Recomendaciones</Text>
-      </TouchableOpacity>
-
-      <TouchableOpacity onPress={() => navigation.navigate("CreateCourse")} style={styles.button}>
+      <TouchableOpacity
+        onPress={() => navigation.navigate("CreateCourse")}
+        style={styles.button}
+      >
         <Text style={styles.buttonText}>Crear un Curso</Text>
       </TouchableOpacity>
 
-      <TouchableOpacity onPress={() => navigation.navigate("CursosCreados")} style={styles.button}>
+      <TouchableOpacity
+        onPress={() => navigation.navigate("CursosCreados")}
+        style={styles.button}
+      >
         <Text style={styles.buttonText}>Ver Cursos Creados</Text>
       </TouchableOpacity>
 
       <TouchableOpacity onPress={handleLogout} style={styles.logoutButton}>
         <Text style={styles.logoutText}>Cerrar Sesión</Text>
       </TouchableOpacity>
-    </View>
+
+      {/* Modal para mostrar la imagen en grande */}
+      <Modal visible={modalVisible} transparent={true} animationType="fade">
+        <Pressable
+          style={styles.modalBackground}
+          onPress={() => setModalVisible(false)}
+        >
+          <Image source={{ uri: profilePicture }} style={styles.fullImage} />
+        </Pressable>
+      </Modal>
+    </ScrollView>
   );
 };
 
 export default ProfileScreen;
 
-
-
 const styles = StyleSheet.create({
   container: {
-    flex: 1,
     alignItems: "center",
     backgroundColor: "#fff",
     paddingVertical: 20,
@@ -135,47 +169,53 @@ const styles = StyleSheet.create({
     width: "30%",
     shadowColor: "#086db8",
     shadowOpacity: 0.1,
-    shadowOffset: { width: 0, height: 2 },
-    shadowRadius: 4,
-    elevation: 4,
+    shadowOffset: { width: 0, height: 1 },
+    shadowRadius: 2,
+    elevation: 2,
   },
   counter: {
     fontSize: 14,
-    fontWeight: "bold",
     color: "#086db8",
     marginBottom: 5,
+    fontWeight: "bold",
   },
   statNumber: {
-    fontSize: 20,
+    fontSize: 18,
     fontWeight: "bold",
-    color: "#333",
+    color: "#000",
   },
   button: {
     backgroundColor: "#086db8",
-    paddingVertical: 12,
-    paddingHorizontal: 20,
-    borderRadius: 12,
-    width: "80%",
-    alignItems: "center",
+    paddingVertical: 10,
+    paddingHorizontal: 25,
+    borderRadius: 8,
     marginVertical: 5,
   },
   buttonText: {
-    fontSize: 16,
-    color: "white",
+    color: "#fff",
     fontWeight: "bold",
   },
   logoutButton: {
-    backgroundColor: "red",
-    paddingVertical: 12,
-    paddingHorizontal: 20,
-    borderRadius: 12,
-    width: "80%",
-    alignItems: "center",
-    marginVertical: 10,
+    marginTop: 20,
+    paddingVertical: 10,
+    paddingHorizontal: 25,
+    borderRadius: 8,
+    backgroundColor: "#ff3b30",
   },
   logoutText: {
-    fontSize: 16,
-    color: "white",
+    color: "#fff",
     fontWeight: "bold",
   },
+  modalBackground: {
+    flex: 1,
+    backgroundColor: "rgba(0,0,0,0.7)",
+    justifyContent: "center",
+    alignItems: "center",
+  },
+  fullImage: {
+    width: 300,
+    height: 300,
+    borderRadius: 10,
+  },
 });
+ 

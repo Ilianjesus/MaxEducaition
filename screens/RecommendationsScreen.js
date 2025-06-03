@@ -1,3 +1,6 @@
+//AVISOOOOO
+// Esta vista no se usa en ningun lado ya
+
 import { useNavigation } from "@react-navigation/native";
 import React, { useEffect, useState } from "react";
 import { View, Text, StyleSheet, TouchableOpacity, ScrollView } from "react-native";
