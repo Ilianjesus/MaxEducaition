@@ -12,7 +12,6 @@ import ProfileScreen from "./screens/ProfileScreen";
 import SearchScreen from "./screens/SearchScreen";
 import CoursesScreen from "./screens/CoursesScreen";
 import Course from "./screens/Course";
-import RecommendationsScreen from "./screens/RecommendationsScreen";
 import Lesson from "./screens/Lesson";
 import ProfileConfigScreen from "./screens/ProfileConfigScreen";
 import CreateCourseScreen from "./screens/CreateCourseScreen";
@@ -88,7 +87,6 @@ export default function Navigation() {
                 <Stack.Screen name="Login" component={Login} options={{ headerShown: false }} />
                 <Stack.Screen name="MyTabs" component={MyTabs} options={{ headerShown: false }} />
                 <Stack.Screen name="Course" component={Course}/>
-                <Stack.Screen name="Recommendations" component={RecommendationsScreen} />
                 <Stack.Screen name="Lesson" component={Lesson} />
                 <Stack.Screen name="ProfileConfig" component={ProfileConfigScreen} />
                 <Stack.Screen name="CreateCourse" component={CreateCourseScreen} />

@@ -1,3 +1,4 @@
+/*
 //AVISOOOOO
 // Esta vista no se usa en ningun lado ya
 
@@ -75,3 +76,4 @@ const styles = StyleSheet.create({
         fontWeight: "600"
     }
 });
+*/
